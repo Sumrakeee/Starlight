@@ -1,2 +1,2 @@
-# Starlight
-# Python app for GKO
+Starlight
+Python app for GKO
