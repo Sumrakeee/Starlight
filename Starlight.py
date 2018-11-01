@@ -7,7 +7,7 @@ from docx.shared import Inches
 import time
 import os
 
-gpath = 'C:\\Users\\SerovaSG\\Desktop\\Starlight\\Files\\'
+gpath = '\\'
 glid = ''
 
 def get_total_pages(url):
@@ -69,7 +69,6 @@ def main():
 		'\n===========================================')
 
 	p_url = input('\nВВЕДИТЕ ССЫЛКУ: ')
-	#p_url = 'https://www.avito.ru/stavropolskiy_kray/doma_dachi_kottedzhi/prodam?s=104&view=list&s_trg=4'
 	startup_page = int(input('\nВВЕДИТЕ НОМЕР СТРАНИЦЫ, С КОТОРОЙ ХОТИТЕ НАЧАТЬ: '))
 
 	base_part = p_url.split('?')[0]
