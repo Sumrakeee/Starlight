@@ -30,16 +30,16 @@ class SelBrowser():
 		driver.save_screenshot(filename)
 		print('screenshot saved')
 
-	def browser_logic(url, filename):
-		global browser
-		if browser == False:
-			SelBrowser.launch_browser()
-			SelBrowser.open_page(url, filename)
-			print('page has been opened')
-			browser = True
-		else:
-			SelBrowser.open_page(url, filename)
-			print('page has been opened')
+def browser_logic(url, filename):
+	global browser
+	if browser == False:
+		SelBrowser.launch_browser()
+		SelBrowser.open_page(url, filename)
+		print('page has been opened')
+		browser = True
+	else:
+		SelBrowser.open_page(url, filename)
+		print('page has been opened')
 
 def main():
 	filename = 0
@@ -47,7 +47,8 @@ def main():
 			#,'https://www.avito.ru/stavropol/zemelnye_uchastki/uchastok_16_sot._snt_dnp_1551738138']
 
 	for url in urls:
-		SelBrowser.browser_logic(url, str(filename)+'.png')
+		uid = url.split('_')[-1]
+		browser_logic(url, uid+'.png')
 		filename += 1
 
 if __name__ == '__main__':
