@@ -1,70 +1,56 @@
-import time
-from selenium import webdriver
-from selenium.webdriver import Chrome
-from docx import Document
-from docx.shared import Inches
+import asyncio
+import pyppeteer
 import requests
 from bs4 import BeautifulSoup
+from docx import Document
+from docx.shared import Inches
+import time
 import os
 
-browser = False
-uid = ''
-path = 'C:\\Users\\SerovaSG\\Desktop\\Qt\\Test\\'
+gpath = 'C:\\Users\\SerovaSG\\Desktop\\Starlight\\Files\\'
+glid = ''
 
 def get_total_pages(url):
-	html = requests.get(url).text
-	soup = BeautifulSoup(html, 'lxml')
-	pages = soup.find('div', class_='pagination-pages').find_all('a', class_='pagination-page')[-1].get('href')
-	total_pages = pages.split('=')[1].split('&')[0]
+	try:
+		html = requests.get(url).text
+		soup = BeautifulSoup(html, 'lxml')
+		pages = soup.find('div', class_='pagination-pages').find_all('a', class_='pagination-page')[-1].get('href')
+		total_pages = pages.split('=')[1].split('&')[0]
+	except:
+		total_pages = 1
 
 	return int(total_pages)
 
-def get_id(url):
-	global uid
-	uid = url.split('_')[-1]
+def parse_id(url):
+	global glid
+	glid = url.split('_')[-1]
 
-def launch_browser():
-	global driver
-	print('browser initialization')
-	chromeOptions = webdriver.ChromeOptions()
-	chromeOptions.add_argument("headless")
-	chromeOptions.add_argument('--ignore-certificate-errors')
-	chromeOptions.add_argument("--test-type")
-	chromeOptions.add_argument("--window-size=1000x2500")
-	driver = webdriver.Chrome(options=chromeOptions)
-
-	print('browser launched -OK')
-	return driver
-
-def open_page(url):
-	global driver
-
-	driver.get(url)
-	print('page has been opened -OK')
+async def init_pyppeteer(url):
+	browser = await pyppeteer.launch()
+	page = await browser.newPage()
 	try:
-		driver.find_element_by_class_name('item-map-control').click()
-		print('map closed -OK')
+		await page.goto(url)
+		await page.click('div.item-map-control')
+		await page.setViewport(dict(width=1920, height=1080))
+		await page.screenshot(path='img.jpg', fullPage=True)
 	except:
-		print('unable to close map -ERROR')
 		pass
-	
-def take_screenshot():
-	global driver
-
-	driver.save_screenshot('img.png')
-	print('screenshot saved -OK')
+	try:
+		await browser.close()
+	except:
+		os.system('taskkill /im chrome.exe /f')
 
 def create_document():
-	global uid
-	global path
+	global glid
+	global gpath
+	filename = glid
+	path = gpath
+
 	doc = Document()
-	doc.add_picture('img.png', width=Inches(4))
-	doc.save(path + uid + '.docx')
-	print('document saved -OK')
+	doc.add_picture('img.jpg', width=Inches(6.5))
+	doc.save(path + glid + '.docx')
 
-def browser_logic_hub(url):
-	global browser
-
+def get_ads(url):
 	html = requests.get(url).text
 	soup = BeautifulSoup(html, 'lxml')
 	ads = soup.find('div', class_='js-catalog-list').find_all('div', class_='item_list')
@@ -72,23 +58,15 @@ def browser_logic_hub(url):
 	for ad in ads:
 		url = 'https://www.avito.ru' + ad.find('div', class_='description-title').find('h3').find('a').get('href')
 		print(url)            
-		get_id(url)
-
-		if browser == False:
-			launch_browser()
-			open_page(url)
-			take_screenshot()
-			create_document()
-			browser = True
-		else:
-			open_page(url)
-			take_screenshot()
-			create_document()
-
-		#time.sleep(2)
+		parse_id(url)
+		try:
+			asyncio.get_event_loop().run_until_complete(init_pyppeteer(url))
+		except:
+			continue
+		create_document()
 
 def main():
-	print('Starlight v1.2S.02112018',
+	print('Starlight v1.01.02112018',
 		'\nРазработчики: Чернышев Егор Владимирович',
 		'\n\t      Чернышева Татьяна Анатольевна',
 		'\n\nФункционал ограничен',
@@ -105,23 +83,22 @@ def main():
 
 	print('\nПРОГРАММА НАЧАЛА ВЫПОЛНЕНИЕ РАБОТЫ')
 
-	#try:
+#	try:
 	for i in range(startup_page, total_pages + 1):
 		url_gen = base_part + query_part + page_part + str(i)
 		print('\nСГЕНЕРИРОВАНА ССЫЛКА: '+ url_gen +'\n')
-		browser_logic_hub(url_gen)
+		get_ads(url_gen)
 
 		print('\nСТРАНИЦА ОБРАБОТАНА')
-	#except:
-	#	url_gen = base_part + query_part + page_part + str(1)
-	#	print('\nСГЕНЕРИРОВАНА ССЫЛКА: '+ url_gen +'\n')
-	#	browser_logic_hub(url_gen)
+#	except:
+#		url_gen = base_part + query_part + page_part + str(1)
+#		print('\nСГЕНЕРИРОВАНА ССЫЛКА: '+ url_gen +'\n')
+#		get_ads(url_gen)
 
-	#	print('\nСТРАНИЦА ОБРАБОТАНА')
+#		print('\nСТРАНИЦА ОБРАБОТАНА')
 
 	print('\nПРОГРАММА ЗАВЕРШИЛА РАБОТУ')
+	#time.sleep(60 * 60 * 24)
 
 if __name__ == '__main__':
 	main()
-	print('driver quit')
-	driver.quit()
