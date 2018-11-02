@@ -1,14 +1,15 @@
-import asyncio
-import pyppeteer
-import requests
-from bs4 import BeautifulSoup
+import time
+from selenium import webdriver
+from selenium.webdriver import Chrome
 from docx import Document
 from docx.shared import Inches
-import time
+import requests
+from bs4 import BeautifulSoup
 import os
 
-gpath = 'C:\\Users\\SerovaSG\\Desktop\\Starlight\\Files\\'
-glid = ''
+browser = False
+uid = ''
+path = 'C:\\Users\\SerovaSG\\Desktop\\Starlight\\Files\\'
 
 def get_total_pages(url):
 	try:
@@ -21,36 +22,52 @@ def get_total_pages(url):
 
 	return int(total_pages)
 
-def parse_id(url):
-	global glid
-	glid = url.split('_')[-1]
+def get_id(url):
+	global uid
+	uid = url.split('_')[-1]
 
-async def init_pyppeteer(url):
-	browser = await pyppeteer.launch()
-	page = await browser.newPage()
+def launch_browser():
+	global driver
+	print('browser initialization')
+	chromeOptions = webdriver.ChromeOptions()
+	chromeOptions.add_argument("headless")
+	chromeOptions.add_argument('--ignore-certificate-errors')
+	chromeOptions.add_argument("--test-type")
+	chromeOptions.add_argument("--window-size=1000x2500")
+	driver = webdriver.Chrome(options=chromeOptions)
+
+	print('browser launched -OK')
+	return driver
+
+def open_page(url):
+	global driver
+
+	driver.get(url)
+	print('page has been opened -OK')
 	try:
-		await page.goto(url)
-		await page.click('div.item-map-control')
-		await page.setViewport(dict(width=1920, height=1080))
-		await page.screenshot(path='img.jpg', fullPage=True)
+		driver.find_element_by_class_name('item-map-control').click()
+		print('map closed -OK')
 	except:
+		print('unable to close map -ERROR')
 		pass
-	try:
-		await browser.close()
-	except:
-		os.system('taskkill /im chrome.exe /f')
+	
+def take_screenshot():
+	global driver
+
+	driver.save_screenshot('img.png')
+	print('screenshot saved -OK')
 
 def create_document():
-	global glid
-	global gpath
-	filename = glid
-	path = gpath
-
+	global uid
+	global path
 	doc = Document()
-	doc.add_picture('img.jpg', width=Inches(6.5))
-	doc.save(path + glid + '.docx')
+	doc.add_picture('img.png', width=Inches(4))
+	doc.save(path + uid + '.docx')
+	print('document saved -OK')
 
-def get_ads(url):
+def browser_logic_hub(url):
+	global browser
+
 	html = requests.get(url).text
 	soup = BeautifulSoup(html, 'lxml')
 	ads = soup.find('div', class_='js-catalog-list').find_all('div', class_='item_list')
@@ -58,15 +75,23 @@ def get_ads(url):
 	for ad in ads:
 		url = 'https://www.avito.ru' + ad.find('div', class_='description-title').find('h3').find('a').get('href')
 		print(url)            
-		parse_id(url)
-		try:
-			asyncio.get_event_loop().run_until_complete(init_pyppeteer(url))
-		except:
-			continue
-		create_document()
+		get_id(url)
+
+		if browser == False:
+			launch_browser()
+			open_page(url)
+			take_screenshot()
+			create_document()
+			browser = True
+		else:
+			open_page(url)
+			take_screenshot()
+			create_document()
+
+		#time.sleep(2)
 
 def main():
-	print('Starlight v1.01.02112018',
+	print('Starlight v1.2S.02112018',
 		'\nРазработчики: Чернышев Егор Владимирович',
 		'\n\t      Чернышева Татьяна Анатольевна',
 		'\n\nФункционал ограничен',
@@ -83,22 +108,16 @@ def main():
 
 	print('\nПРОГРАММА НАЧАЛА ВЫПОЛНЕНИЕ РАБОТЫ')
 
-#	try:
 	for i in range(startup_page, total_pages + 1):
 		url_gen = base_part + query_part + page_part + str(i)
 		print('\nСГЕНЕРИРОВАНА ССЫЛКА: '+ url_gen +'\n')
-		get_ads(url_gen)
+		browser_logic_hub(url_gen)
 
 		print('\nСТРАНИЦА ОБРАБОТАНА')
-#	except:
-#		url_gen = base_part + query_part + page_part + str(1)
-#		print('\nСГЕНЕРИРОВАНА ССЫЛКА: '+ url_gen +'\n')
-#		get_ads(url_gen)
-
-#		print('\nСТРАНИЦА ОБРАБОТАНА')
 
 	print('\nПРОГРАММА ЗАВЕРШИЛА РАБОТУ')
-	#time.sleep(60 * 60 * 24)
 
 if __name__ == '__main__':
 	main()
+	print('driver quit')
+	driver.quit()
