@@ -33,7 +33,7 @@ def launch_browser():
 	chromeOptions.add_argument("headless")
 	chromeOptions.add_argument('--ignore-certificate-errors')
 	chromeOptions.add_argument("--test-type")
-	chromeOptions.add_argument("--window-size=1000x2500")
+	chromeOptions.add_argument("--window-size=1000x3000")
 	driver = webdriver.Chrome(options=chromeOptions)
 
 	print('browser launched -OK')
@@ -98,7 +98,12 @@ def main():
 		'\n===========================================')
 
 	p_url = input('\nВВЕДИТЕ ССЫЛКУ: ')
-	startup_page = int(input('\nВВЕДИТЕ НОМЕР СТРАНИЦЫ, С КОТОРОЙ ХОТИТЕ НАЧАТЬ: '))
+
+	try:
+		startup_page = int(input('\nВВЕДИТЕ НОМЕР СТРАНИЦЫ, С КОТОРОЙ ХОТИТЕ НАЧАТЬ: '))
+	except:
+		startup_page = 1
+		print('\nНАЧАЛЬНАЯ СТРАНИЦА НЕ УКАЗАНА. ВЫБРАНА СТРАНИЦА ПО УМОЛЧАНИЮ (1)')
 
 	base_part = p_url.split('?')[0]
 	query_part = '?&s=104&view=list'
