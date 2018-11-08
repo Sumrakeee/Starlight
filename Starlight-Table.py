@@ -1,7 +1,22 @@
-import requests
-from bs4 import BeautifulSoup
+import socks
+import socket
 import csv
 import time
+import requests
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+
+def print_ip():
+	ip = requests.get('http://ident.me').text
+	print('Ваш текущий ip: ' + ip)
+
+def change_ip():
+	try:
+		socks.set_default_proxy(socks.SOCKS5, "localhost", 9150)
+		socket.socket = socks.socksocket
+		print('\nЗАПУЩЕН МЕХАНИЗМ ПОДМЕНЫ IP АДРЕСА')
+	except:
+		print('\nВНИМАНИЕ! TOR НЕ ЗАПУЩЕН!')
 
 def delay(sec=2):
 	print('delay: '+str(sec))
@@ -21,7 +36,7 @@ def write_csv(data):
 
 def get_total_pages(url):
 	try:
-		html = requests.get(url).text
+		html = requests.get(url, headers={'User-Agent': UserAgent().chrome}).text
 		soup = BeautifulSoup(html, 'lxml')
 		pages = soup.find('div', class_='pagination-pages').find_all('a', class_='pagination-page')[-1].get('href')
 		total_pages = pages.split('=')[1].split('&')[0]
@@ -31,19 +46,21 @@ def get_total_pages(url):
 	return int(total_pages)
 
 def get_page_data(url):
-	html = requests.get(url).text
+	html = requests.get(url, headers={'User-Agent': UserAgent().chrome}).text
 	soup = BeautifulSoup(html, 'lxml')
 	ads = soup.find('div', class_='js-catalog-list').find_all('div', class_='item_list')
 
 	for ad in ads:
+		print_ip()
+
 		url = 'https://www.avito.ru' + ad.find('div', class_='description-title').find('h3').find('a').get('href')
 		m_url = 'https://m.avito.ru' + ad.find('div', class_='description-title').find('h3').find('a').get('href')
 		print(url)
 
-		html = requests.get(url).text
+		html = requests.get(url, headers={'User-Agent': UserAgent().chrome}).text
 		soup = BeautifulSoup(html, 'lxml')
 
-		m_html = requests.get(m_url).text
+		m_html = requests.get(m_url, headers={'User-Agent': UserAgent().chrome}).text
 		m_soup = BeautifulSoup(m_html, 'lxml')
 
 		# Title
@@ -110,9 +127,11 @@ def get_page_data(url):
 
 		write_csv(data)			
 
-		delay()
+		#delay()
 
 def main():
+	#change_ip()
+
 	print('Starlight-Table v1.1(07112018)',
 		'\nРазработчик: Чернышев Егор Владимирович',
 		'\n\nФункционал ограничен',
