@@ -15,14 +15,14 @@ def getIP():
 	ip = requests.get('http://ident.me').text
 	print('Новый IP адрес: '+ip)
 
-def writeIP(data):
+def writeIP():
+	global ipport
+
 	f = open('proxylist.txt', 'a+')
-	f.write(data+'\n')
+	f.write(ipport+'\n')
 	f.close()
 
 def avitoBreach():
-	global ipport
-
 	print('Попытка установления соединения с сайтом через прокси\n')
 	try:
 		r = requests.get('https://www.avito.ru/stavropolskiy_kray/kvartiry/prodam/2-komnatnye?p=11&view=list', headers=headers)
@@ -32,7 +32,7 @@ def avitoBreach():
 			print('='*17)
 			print(r)
 
-			writeIP(ipport)
+			writeIP()
 		else:
 			print('Сайт не вернул [200]')
 			print(r)
