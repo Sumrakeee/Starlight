@@ -18,7 +18,7 @@ def getIP():
 def writeIP():
 	global ipport
 
-	f = open('proxylist.txt', 'a+')
+	f = open('proxy.txt', 'a+')
 	f.write(ipport+'\n')
 	f.close()
 
