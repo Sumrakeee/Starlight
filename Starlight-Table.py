@@ -2,24 +2,14 @@ import socks
 import socket
 import csv
 import time
+import random
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
-def print_ip():
-	ip = requests.get('http://ident.me').text
-	print('Ваш текущий ip: ' + ip)
-
-def change_ip():
-	try:
-		socks.set_default_proxy(socks.SOCKS5, "localhost", 9150)
-		socket.socket = socks.socksocket
-		print('\nЗАПУЩЕН МЕХАНИЗМ ПОДМЕНЫ IP АДРЕСА')
-	except:
-		print('\nВНИМАНИЕ! TOR НЕ ЗАПУЩЕН!')
-
-def delay(sec=2):
-	print('delay: '+str(sec))
+def delay():
+	sec = random.uniform(4.0, 5.0)
+	print('Delay: ' + str(sec) + ' sec\n')
 	time.sleep(sec)
 
 def write_csv(data):
@@ -45,17 +35,16 @@ def get_total_pages(url):
 
 	return int(total_pages)
 
-def get_page_data(url):
+def get_page_data(url, page, adnum):
 	html = requests.get(url, headers={'User-Agent': UserAgent().chrome}).text
 	soup = BeautifulSoup(html, 'lxml')
 	ads = soup.find('div', class_='js-catalog-list').find_all('div', class_='item_list')
 
 	for ad in ads:
-		print_ip()
-
 		url = 'https://www.avito.ru' + ad.find('div', class_='description-title').find('h3').find('a').get('href')
 		m_url = 'https://m.avito.ru' + ad.find('div', class_='description-title').find('h3').find('a').get('href')
-		print(url)
+		
+		print(str(page) + ':' + str(adnum) + ' - ' + url)
 
 		html = requests.get(url, headers={'User-Agent': UserAgent().chrome}).text
 		soup = BeautifulSoup(html, 'lxml')
@@ -125,14 +114,13 @@ def get_page_data(url):
 
 		print('ОБРАБОТАНО')
 
-		write_csv(data)			
+		write_csv(data)
+		adnum += 1
 
-		#delay()
+		delay()
 
 def main():
-	#change_ip()
-
-	print('Starlight-Table v1.1(07112018)',
+	print('Starlight-Table v1.2 (16/11/2018)',
 		'\nРазработчик: Чернышев Егор Владимирович',
 		'\n\nФункционал ограничен',
 		'\n===========================================')
@@ -156,9 +144,9 @@ def main():
 	for i in range(startup_page, total_pages + 1):
 		url_gen = base_part + query_part + page_part + str(i)
 		print('\nСГЕНЕРИРОВАНА ССЫЛКА: '+ url_gen +'\n')
-		get_page_data(url_gen)
+		get_page_data(url_gen, i, 1)
 
-		print('\nСТРАНИЦА ОБРАБОТАНА')
+		print('СТРАНИЦА ОБРАБОТАНА')
 
 	print('\nПРОГРАММА ЗАВЕРШИЛА РАБОТУ')
 
