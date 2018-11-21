@@ -7,6 +7,10 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
+def changeIP():
+	socks.set_default_proxy(socks.SOCKS5, '162.144.209.26', 14352)
+	socket.socket = socks.socksocket
+
 def delay():
 	sec = random.uniform(4.0, 5.0)
 	print('Delay: ' + str(sec) + ' sec\n')
@@ -120,6 +124,8 @@ def get_page_data(url, page, adnum):
 		delay()
 
 def main():
+	#changeIP()
+
 	print('Starlight-Table v1.2 (16/11/2018)',
 		'\nРазработчик: Чернышев Егор Владимирович',
 		'\n\nФункционал ограничен',
