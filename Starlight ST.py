@@ -145,9 +145,8 @@ def main():
 
 		print(Style.BRIGHT, Fore.CYAN + '\nСТРАНИЦА ОБРАБОТАНА' + Style.RESET_ALL)
 
-	print('\nПРОГРАММА ЗАВЕРШИЛА РАБОТУ')
+	print(Style.BRIGHT + Fore.CYAN + '\nПРОГРАММА ЗАВЕРШИЛА РАБОТУ' + Style.RESET_ALL)
 
 if __name__ == '__main__':
 	main()
-	print('driver quit')
 	driver.quit()
